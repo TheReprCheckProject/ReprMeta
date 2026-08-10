@@ -28,6 +28,7 @@ reprmeta.get_git_metadata()
 """
 
 import sys
+import locale
 import os
 import platform
 import subprocess
@@ -85,7 +86,7 @@ def get_git_metadata():
         ).decode().strip()
 
         return {"git_commit": commit, "git_branch": branch, 
-                "git_status": status, "git_remote_url": remote_url}
+                "is_dirty": bool(status), "git_remote_url": remote_url}
 
     except Exception:
         return {}
@@ -111,12 +112,12 @@ def get_os_metadata():
 def get_python_metadata():
     """ Get Python version and implementation """
     return {
-        "python_version": sys.version(),
+        "python_version": sys.version,
         "python_implementation": platform.python_implementation()
     }
 
 
-def get_conda_metadata(env_file=""):
+def get_conda_metadata(env_file):
     """ Get whether conda is present and if so, packages in environment.yml """
     if os.environ.get("CONDA_DEFAULT_ENV"):
         conda_present, channels, dependencies = True, [], []
@@ -147,14 +148,6 @@ def get_conda_metadata(env_file=""):
     return None
 
 
-def get_misc_metadata():
-    """ Get locale and encoding """
-    return {
-        "locale": locale.getdefaultlocale(), 
-        "encoding": sys.getfilesystemencoding()
-    }
-
-
 def get_hpc_metadata():
     """ Get HPC job scheduler """
     hpc_env_vars = {
@@ -174,14 +167,30 @@ def get_hpc_metadata():
     return None
 
 
+def get_misc_metadata():
+    """ Get locale and encoding """
+    return {
+        "locale": locale.getlocale(), 
+        "encoding": sys.getfilesystemencoding()
+    }
+
+
 
 
 ### Core functions --------------------------------------------------------
 
-def get_metadata() -> dict:
+def get_metadata(env_file="") -> dict:
     """ Create dict containing comprehensive reproducibility metadata """
-    metadata = {}
-    return metadata
+    return {
+        "timestamp": get_timestamp(),
+        "git_metadata": get_git_metadata(),
+        "hardware_metadata": get_hardware_metadata(),
+        "os_metadata": get_os_metadata(),
+        "python_metadata": get_python_metadata(),
+        "conda_metadata": get_conda_metadata(env_file),
+        "hpc_metadata": get_hpc_metadata(),
+        "misc_metadata": get_misc_metadata()
+    }
 
 
 def metadata() -> dict:
@@ -193,7 +202,14 @@ def print_metadata():
     """ Pretty-print metadata to console """
     metadata = get_metadata()
     for key, value in metadata.items():
-        print(f"{key}: {value}")
+        if isinstance(value, str):
+            print(f"\n{key}: {value}")
+            
+        if isinstance(value, dict):
+            print(f"\n{key}: ")            
+            for key2, value2 in value.items():
+                print(f"    {key2}: {value2}")
+    print("\n")
 
 
 def export_metadata(dest="", filename="reprmeta"):
