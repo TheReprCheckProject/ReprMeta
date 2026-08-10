@@ -133,6 +133,7 @@ def get_hardware_metadata():
 
 
 def get_os_metadata():
+    """ Get operating system, release, and OS version """
     return {
         "os": platform.system(),
         "os_release": platform.release(),
@@ -141,7 +142,11 @@ def get_os_metadata():
 
 
 def get_python_metadata():
-    raise NotImplementedError
+    """ Get Python version and implementation """
+    return {
+        "python_version": sys.version(),
+        "python_implementation": platform.python_implementation()
+    }
 
 
 def get_conda_metadata():
