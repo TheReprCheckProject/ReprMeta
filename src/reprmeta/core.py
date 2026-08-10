@@ -31,6 +31,7 @@ import sys
 import locale
 import os
 import platform
+import json
 import subprocess
 from datetime import datetime
 from importlib.metadata import version, PackageNotFoundError
@@ -133,7 +134,7 @@ def get_conda_metadata(env_file):
         
         if not env_file:
             # Attempt to locate environment.yml in current working directory
-            path = os.path.join(os.get_cwd(), "environment.yml")
+            path = os.path.join(os.getcwd(), "environment.yml")
             env_file = path if os.path.isfile(path) else ""
 
         if env_file: # Parse environment.yml
@@ -208,7 +209,7 @@ def metadata() -> dict:
     return get_metadata()
 
 
-def print_metadata():
+def print_metadata() -> None:
     """ Pretty-print metadata to console """
     metadata = get_metadata()
     for key, value in metadata.items():
@@ -223,7 +224,31 @@ def print_metadata():
     print("\n")
 
 
-def export_metadata(dest="", filename="reprmeta"):
+def export_metadata(dest="", filename="reprmeta", 
+                    env_file="", comments={}) -> None:
     """ Write metadata to .json file at dest file/directory """
-    # conda list --json lists all packages in the environment - use for export    
-    raise NotImplementedError
+        
+    try: # Get all conda package metadata
+        conda_package_dump_str = subprocess.check_output(
+            ["conda", "list", "--json"], 
+            stderr=subprocess.DEVNULL
+        ).decode().strip()
+        conda_package_dump_dict = json.loads(conda_package_dump_str)
+    except:
+        conda_package_dump_dict = None
+    
+    export_dict = {
+        "comments": comments,
+        "reprmeta": get_metadata(env_file)
+    }
+    
+    # Get export destination .json file
+    if not dest:
+        dest = os.path.join(os.getcwd(), f"{filename}.json")
+    else:
+        if os.path.isdir(dest):
+            dest = os.path.join(dest, f"{filename}.json")
+            
+    # Export metadata
+    with open(dest, "w", encoding="utf-8") as export_file:
+        json.dump(export_dict, export_file, indent=2)
