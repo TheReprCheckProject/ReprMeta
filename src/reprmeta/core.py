@@ -238,6 +238,8 @@ def export_metadata(dest="", filename="reprmeta",
         conda_package_dump_dict = None
     
     export_dict = {
+        "generated_by": "ReprMeta",
+        "schema_version": 1,
         "comments": comments,
         "reprmeta": get_metadata(env_file)
     }
