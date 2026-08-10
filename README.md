@@ -2,7 +2,7 @@
 
 ![Python](https://img.shields.io/badge/language-python-green)
 ![License: CC-BY-NC-4.0](https://img.shields.io/badge/license-CC--BY--NC--4.0-lightgrey)
-<!-- ![GitHub release (latest SemVer)](https://img.shields.io/github/v/release/TheReprCheckProject/ReprMeta -->)
+<!-- ![GitHub release (latest SemVer)](https://img.shields.io/github/v/release/TheReprCheckProject/ReprMeta -->
 <!-- ![DOI](https://img.shields.io/badge/DOI-10.5281%2Fzenodo.XXXXXX-blue) -->
 <!-- ![Bioconda](https://img.shields.io/conda/vn/bioconda/reprmeta) -->
 
@@ -42,6 +42,12 @@ reprmeta.export_metadata(
     comments = {"Author": "John Smith", "Dataset Version": "0.1.0"}
 )
 ```
+
+## Roadmap
+- Conda environment metadata
+- HPC job metadata
+- Virtual environment / Docker metadata
+- Bioconda / conda‑forge packaging
 
 ## Citation
 
