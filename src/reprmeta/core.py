@@ -46,13 +46,6 @@ from datetime import datetime
     #}
 
 
-#def get_platform_metadata():
-    #return {
-        #"os": platform.system(),
-        #"os_release": platform.release(),
-        #"os_version": platform.version(),
-    #}
-
 
 #def get_timestamp():
     #return {
@@ -140,7 +133,11 @@ def get_hardware_metadata():
 
 
 def get_os_metadata():
-    raise NotImplementedError
+    return {
+        "os": platform.system(),
+        "os_release": platform.release(),
+        "os_version": platform.version(),
+    }    
 
 
 def get_python_metadata():
