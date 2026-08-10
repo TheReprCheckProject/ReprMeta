@@ -8,6 +8,9 @@
 
 A python package for embedding reproducibility metadata into notebooks, pipelines, and scientific workflows.
 
+## About
+ReprMeta lowers the barrier to reproducible research by automating a substantial portion of metadata annotation. It can display execution metadata directly inside Jupyter notebooks or export it to a structured JSON file. ReprMeta only reveals user‑specified paths and avoids exposing sensitive environment details. Where automatic detection is not possible nor appropriate, ReprMeta allows users to inject their own contextual metadata into exported files.
+
 
 ## Installation
 ```python
@@ -15,28 +18,28 @@ pip install reprmeta
 ```
 
 ## Usage Examples
-### Importing ReprMeta
+Importing ReprMeta:
 ```python
 import reprmeta
 ```
-### Rendering a ReprMeta Dictionary in a Jupyter Notebook
+Rendering a ReprMeta Dictionary in a Jupyter Notebook:
 ```python
 reprmeta.metadata()
 ```
-### Fetching a ReprMeta Metadata Dictionary
+Fetching a ReprMeta Metadata Dictionary:
 ```python
 reprmeta.get_metadata() # Alias for reprmeta.metadata()
 ```
-### Printing ReprMeta Metadata to Console
+Printing ReprMeta Metadata to Console:
 ```python
 reprmeta.print_metadata()
 ```
-### Exporting Metadata to JSON File
-The comments option allows the user to inject additional metadata that cannot be automatically retrieved by ReprMeta.
+Exporting Metadata to JSON File:
 ```python
+# The comments option allows the user to inject additional metadata that cannot be automatically retrieved by ReprMeta.
 reprmeta.export_metadata(
-    dest="path/to/destination.json",
-    comments={"Author": "John Smith", "Dataset Version": "0.1.0"}
+    dest = "path/to/destination.json",
+    comments = {"Author": "John Smith", "Dataset Version": "0.1.0"}
 )
 ```
 
