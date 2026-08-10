@@ -1,0 +1,22 @@
+ [project]
+name = "reprmeta"
+version = "0.1.0a1"
+description = "A python package for embedding reproducibility metadata."
+readme = "README.md"
+authors = [
+    { name = "Ciel Ivy-Lee Baumann" }
+]
+license = { file = "LICENSE" }
+requires-python = ">=3.8"
+keywords = ["reproducibility", "metadata", "scientific-computing", "notebooks"]
+
+dependencies = []
+
+[project.urls]
+Homepage = "https://github.com/TheReprCheckProject/ReprMeta"
+Source = "https://github.com/TheReprCheckProject/ReprMeta"
+Issues = "https://github.com/TheReprCheckProject/ReprMeta/issues"
+
+[build-system]
+requires = ["setuptools>=61.0"]
+build-backend = "setuptools.build_meta"

@@ -27,7 +27,77 @@ reprmeta.get_git_metadata()
 
 """
 
+import sys
+import os
+import platform
+import subprocess
+import importlib.metadata
+from datetime import datetime
+
+
 ### Get metadata functions ------------------------------------------------
+
+
+def get_python_metadata():
+    return {
+        "python_version": platform.python_version(),
+        "python_executable": sys.executable,
+        "implementation": platform.python_implementation(),
+    }
+
+
+def get_platform_metadata():
+    return {
+        "os": platform.system(),
+        "os_release": platform.release(),
+        "os_version": platform.version(),
+        "machine": platform.machine(),
+        "architecture": platform.architecture()[0],
+    }
+
+
+def get_timestamp():
+    return {
+        "timestamp": datetime.now().isoformat()
+    }
+
+
+def get_installed_packages():
+    """Returns installed packages using importlib.metadata (Python ≥3.8)."""
+    packages = {}
+    for dist in importlib.metadata.distributions():
+        name = dist.metadata["Name"]
+        version = dist.version
+        packages[name] = version
+    return {"packages": packages}
+
+
+def get_conda_env():
+    """Returns conda environment name and prefix if available."""
+    conda_prefix = os.environ.get("CONDA_PREFIX")
+    conda_default_env = os.environ.get("CONDA_DEFAULT_ENV")
+
+    return {
+        "conda_prefix": conda_prefix,
+        "conda_env": conda_default_env,
+    }
+
+
+def get_git_metadata():
+    """Returns git commit hash and branch if inside a git repo."""
+    try:
+        commit = subprocess.check_output(
+            ["git", "rev-parse", "HEAD"], stderr=subprocess.DEVNULL
+        ).decode().strip()
+
+        branch = subprocess.check_output(
+            ["git", "rev-parse", "--abbrev-ref", "HEAD"], stderr=subprocess.DEVNULL
+        ).decode().strip()
+
+        return {"git_commit": commit, "git_branch": branch}
+
+    except Exception:
+        return {"git_commit": None, "git_branch": None}
 
 
 
@@ -35,7 +105,14 @@ reprmeta.get_git_metadata()
 
 def get_metadata() -> dict:
     """ Create dict containing comprehensive reproducibility metadata """
-    raise NotImplementedError
+    metadata = {}
+    metadata.update(get_timestamp())
+    metadata.update(get_python_metadata())
+    metadata.update(get_platform_metadata())
+    metadata.update(get_conda_env())
+    metadata.update(get_git_metadata())
+    metadata.update(get_installed_packages())
+    return metadata
 
 
 def metadata() -> dict:
