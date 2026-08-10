@@ -1,0 +1,20 @@
+""" Python Package API File for ReprMeta """
+
+from importlib.metadata import version, PackageNotFoundError
+
+# Package version
+try:
+    __version__ = version("reprmeta")
+except PackageNotFoundError:
+    __version__ = None
+
+# Public API
+from .core import get_metadata, metadata, print_metadata, export_metadata
+
+__all__ = [
+    "get_metadata",
+    "metadata",
+    "print_metadata",
+    "export_metadata",
+    "__version__",
+]

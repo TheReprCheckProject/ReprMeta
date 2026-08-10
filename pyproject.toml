@@ -10,7 +10,9 @@ license = { file = "LICENSE" }
 requires-python = ">=3.8"
 keywords = ["reproducibility", "metadata", "scientific-computing", "notebooks"]
 
-dependencies = []
+dependencies = [
+    "pyyaml>=6.0"
+]
 
 [project.urls]
 Homepage = "https://github.com/TheReprCheckProject/ReprMeta"
