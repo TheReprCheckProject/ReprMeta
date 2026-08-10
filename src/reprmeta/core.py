@@ -31,22 +31,9 @@ import sys
 import os
 import platform
 import subprocess
-import yaml
 from datetime import datetime
 
-
-### Get metadata functions ------------------------------------------------
-
-
-#def get_installed_packages():
-    #"""Returns installed packages using importlib.metadata (Python ≥3.8)."""
-    #packages = {}
-    #for dist in importlib.metadata.distributions():
-        #name = dist.metadata["Name"]
-        #version = dist.version
-        #packages[name] = version
-    #return {"packages": packages}
-
+import yaml
 
 
 
@@ -65,6 +52,8 @@ def get_docker_metadata():
 def get_virtual_env_metadata():
     # Cloud instance detection bool
     raise NotImplementedError
+
+
 
 
 ### Get metadata functions ------------------------------------------------
@@ -128,8 +117,7 @@ def get_python_metadata():
 
 
 def get_conda_metadata(env_file=""):
-    """ Get whether conda is running and if so, packages in environment.yml """
-    # conda list --json lists all packages in the environment - use for export instead
+    """ Get whether conda is present and if so, packages in environment.yml """
     if os.environ.get("CONDA_DEFAULT_ENV"):
         conda_present, channels, dependencies = True, [], []
         
@@ -167,12 +155,25 @@ def get_misc_metadata():
     }
 
 
-def get_jupyter_metadata():
-    raise NotImplementedError
-
-
 def get_hpc_metadata():
-    raise NotImplementedError
+    """ Get HPC job scheduler """
+    hpc_env_vars = {
+        "slurm": "SLURM_JOB_ID",
+        "pbs": "PBS_JOBID",
+        "lsf": "LSB_JOBID",
+        "sge": "JOB_ID",
+        "htcondor": "CONDOR_JOBID",
+        "aws_batch": "AWS_BATCH_JOB_ID",
+        "gcp_batch": "GOOGLE_CLOUD_BATCH_JOB",
+        "azure_batch": "AZ_BATCH_JOB_ID",
+    }
+
+    for scheduler, env_var in hpc_env_vars.items():
+        if os.environ.get(env_var):
+            return scheduler
+    return None
+
+
 
 
 ### Core functions --------------------------------------------------------
@@ -197,4 +198,5 @@ def print_metadata():
 
 def export_metadata(dest="", filename="reprmeta"):
     """ Write metadata to .json file at dest file/directory """
+    # conda list --json lists all packages in the environment - use for export    
     raise NotImplementedError
