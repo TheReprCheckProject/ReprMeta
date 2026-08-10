@@ -83,21 +83,6 @@ from datetime import datetime
     #}
 
 
-#def get_git_metadata():
-    #"""Returns git commit hash and branch if inside a git repo."""
-    #try:
-        #commit = subprocess.check_output(
-            #["git", "rev-parse", "HEAD"], stderr=subprocess.DEVNULL
-        #).decode().strip()
-
-        #branch = subprocess.check_output(
-            #["git", "rev-parse", "--abbrev-ref", "HEAD"], stderr=subprocess.DEVNULL
-        #).decode().strip()
-
-        #return {"git_commit": commit, "git_branch": branch}
-
-    #except Exception:
-        #return {"git_commit": None, "git_branch": None}
 
 
 ### Future functions to implement -----------------------------------------
@@ -120,7 +105,32 @@ def get_virtual_env_metadata():
 ### Get metadata functions ------------------------------------------------
 
 def get_git_metadata():
-    raise NotImplementedError
+    """ If inside git repo, get git commit hash, branch, and repo status """
+    try:
+        commit = subprocess.check_output(
+            ["git", "rev-parse", "HEAD"], 
+            stderr=subprocess.DEVNULL
+        ).decode().strip()
+
+        branch = subprocess.check_output(
+            ["git", "rev-parse", "--abbrev-ref", "HEAD"],
+            stderr=subprocess.DEVNULL
+        ).decode().strip()
+        
+        status = subprocess.check_output(
+            ["git", "status", "--porcelain"],
+            stderr=subprocess.DEVNULL
+        )
+        
+        remote_url = subprocess.check_output(
+            ["git", "remote", "get-url", "origin"]
+        ).decode().strip()
+
+        return {"git_commit": commit, "git_branch": branch, 
+                "git_status": status, "git_remote_url": remote_url}
+
+    except Exception:
+        return {}
 
 
 def get_hardware_metadata():
@@ -156,12 +166,6 @@ def get_hpc_metadata():
 def get_metadata() -> dict:
     """ Create dict containing comprehensive reproducibility metadata """
     metadata = {}
-    metadata.update(get_timestamp())
-    metadata.update(get_python_metadata())
-    metadata.update(get_platform_metadata())
-    metadata.update(get_conda_env())
-    metadata.update(get_git_metadata())
-    metadata.update(get_installed_packages())
     return metadata
 
 
