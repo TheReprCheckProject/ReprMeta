@@ -3,7 +3,9 @@
 ![Python](https://img.shields.io/badge/language-python-green)
 ![DOI](https://img.shields.io/badge/DOI-10.5281/zenodo.21873501-blue)
 ![License: CC-BY-NC-4.0](https://img.shields.io/badge/license-CC--BY--NC--4.0-lightgrey)
-![GitHub release (latest SemVer)](https://img.shields.io/github/v/release/TheReprCheckProject/ReprMeta?include_prereleases)
+![GitHub tag (latest)](https://img.shields.io/github/v/tag/TheReprCheckProject/ReprMeta)
+<!-- ![GitHub release (latest SemVer)](https://img.shields.io/github/v/release/TheReprCheckProject/ReprMeta) -->
+
 <!-- ![Bioconda](https://img.shields.io/conda/vn/bioconda/reprmeta) -->
 
 A python package for embedding reproducibility metadata into notebooks, pipelines, and scientific workflows.
