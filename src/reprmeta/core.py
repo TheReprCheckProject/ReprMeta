@@ -33,6 +33,7 @@ import os
 import platform
 import subprocess
 from datetime import datetime
+from importlib.metadata import version, PackageNotFoundError
 
 import yaml
 
@@ -58,6 +59,14 @@ def get_virtual_env_metadata():
 
 
 ### Get metadata functions ------------------------------------------------
+
+def get_reprmeta_version():
+    """ Get current package version if installed """
+    try:
+        return version("reprmeta")
+    except PackageNotFoundError:
+        return None
+
 
 def get_timestamp():
     return datetime.now().isoformat()
@@ -85,35 +94,35 @@ def get_git_metadata():
             ["git", "remote", "get-url", "origin"]
         ).decode().strip()
 
-        return {"git_commit": commit, "git_branch": branch, 
-                "is_dirty": bool(status), "git_remote_url": remote_url}
+        return {"Latest Commit": commit, "Git Branch": branch, 
+                "Dirty Repo": bool(status), "Git Remote URL": remote_url}
 
     except Exception:
-        return {}
+        return None
 
 
 def get_hardware_metadata():
     """ Get machine, architecture, number of cores, and processor name """
-    return {"machine": platform.machine(),
-            "architecture": platform.architecture()[0],
-            "num_cores": os.cpu_count(),
-            "processor": platform.processor()}
+    return {"Machine": platform.machine(),
+            "Architecture": platform.architecture()[0],
+            "Number of Logical Cores": os.cpu_count(),
+            "Processor": platform.processor()}
 
 
 def get_os_metadata():
     """ Get operating system, release, and OS version """
     return {
-        "os": platform.system(),
-        "os_release": platform.release(),
-        "os_version": platform.version(),
+        "OS": platform.system(),
+        "OS Release": platform.release(),
+        "OS Version": platform.version(),
     }    
 
 
 def get_python_metadata():
     """ Get Python version and implementation """
     return {
-        "python_version": sys.version,
-        "python_implementation": platform.python_implementation()
+        "Python Version": sys.version,
+        "Python Implementation": platform.python_implementation()
     }
 
 
@@ -140,25 +149,25 @@ def get_conda_metadata(env_file):
             dependencies = sorted(dependencies)
             
         return {
-            "conda_present": conda_present,
-            "conda_channels": channels,
-            "conda_dependencies": dependencies
+            "Conda Present": conda_present,
+            "Conda Channels": channels,
+            "Conda Dependencies": dependencies
         }
-            
+
     return None
 
 
 def get_hpc_metadata():
     """ Get HPC job scheduler """
     hpc_env_vars = {
-        "slurm": "SLURM_JOB_ID",
-        "pbs": "PBS_JOBID",
-        "lsf": "LSB_JOBID",
-        "sge": "JOB_ID",
-        "htcondor": "CONDOR_JOBID",
-        "aws_batch": "AWS_BATCH_JOB_ID",
-        "gcp_batch": "GOOGLE_CLOUD_BATCH_JOB",
-        "azure_batch": "AZ_BATCH_JOB_ID",
+        "Slurm": "SLURM_JOB_ID",
+        "PBS": "PBS_JOBID",
+        "LSF": "LSB_JOBID",
+        "SGE": "JOB_ID",
+        "HTCondor": "CONDOR_JOBID",
+        "AWS Batch": "AWS_BATCH_JOB_ID",
+        "Google Cloud Batch": "GOOGLE_CLOUD_BATCH_JOB",
+        "Azure Batch": "AZ_BATCH_JOB_ID",
     }
 
     for scheduler, env_var in hpc_env_vars.items():
@@ -170,8 +179,8 @@ def get_hpc_metadata():
 def get_misc_metadata():
     """ Get locale and encoding """
     return {
-        "locale": locale.getlocale(), 
-        "encoding": sys.getfilesystemencoding()
+        "Locale": locale.getlocale()[0], 
+        "Encoding": locale.getlocale()[1]
     }
 
 
@@ -182,14 +191,15 @@ def get_misc_metadata():
 def get_metadata(env_file="") -> dict:
     """ Create dict containing comprehensive reproducibility metadata """
     return {
-        "timestamp": get_timestamp(),
-        "git_metadata": get_git_metadata(),
-        "hardware_metadata": get_hardware_metadata(),
-        "os_metadata": get_os_metadata(),
-        "python_metadata": get_python_metadata(),
-        "conda_metadata": get_conda_metadata(env_file),
-        "hpc_metadata": get_hpc_metadata(),
-        "misc_metadata": get_misc_metadata()
+        "ReprMeta Version": get_reprmeta_version(),
+        "Timestamp": get_timestamp(),
+        "Git Metadata": get_git_metadata(),
+        "Hardware Metadata": get_hardware_metadata(),
+        "OS Metadata": get_os_metadata(),
+        "Python Metadata": get_python_metadata(),
+        "Conda Metadata": get_conda_metadata(env_file),
+        "HPC Metadata": get_hpc_metadata(),
+        "Misc Metadata": get_misc_metadata()
     }
 
 
@@ -204,11 +214,12 @@ def print_metadata():
     for key, value in metadata.items():
         if isinstance(value, str):
             print(f"\n{key}: {value}")
-            
-        if isinstance(value, dict):
+        elif isinstance(value, dict):
             print(f"\n{key}: ")            
             for key2, value2 in value.items():
                 print(f"    {key2}: {value2}")
+        else:
+            print(f"\n{key}: N/A")
     print("\n")
 
 
