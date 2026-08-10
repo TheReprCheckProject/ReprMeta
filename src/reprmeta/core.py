@@ -31,26 +31,11 @@ import sys
 import os
 import platform
 import subprocess
-import importlib.metadata
+import yaml
 from datetime import datetime
 
 
 ### Get metadata functions ------------------------------------------------
-
-
-#def get_python_metadata():
-    #return {
-        #"python_version": platform.python_version(),
-        #"python_executable": sys.executable,
-        #"implementation": platform.python_implementation(),
-    #}
-
-
-
-#def get_timestamp():
-    #return {
-        #"timestamp": datetime.now().isoformat()
-    #}
 
 
 #def get_installed_packages():
@@ -61,17 +46,6 @@ from datetime import datetime
         #version = dist.version
         #packages[name] = version
     #return {"packages": packages}
-
-
-#def get_conda_env():
-    #"""Returns conda environment name and prefix if available."""
-    #conda_prefix = os.environ.get("CONDA_PREFIX")
-    #conda_default_env = os.environ.get("CONDA_DEFAULT_ENV")
-
-    #return {
-        #"conda_prefix": conda_prefix,
-        #"conda_env": conda_default_env,
-    #}
 
 
 
@@ -95,6 +69,10 @@ def get_virtual_env_metadata():
 
 ### Get metadata functions ------------------------------------------------
 
+def get_timestamp():
+    return datetime.now().isoformat()
+
+
 def get_git_metadata():
     """ If inside git repo, get git commit hash, branch, and repo status """
     try:
@@ -111,7 +89,7 @@ def get_git_metadata():
         status = subprocess.check_output(
             ["git", "status", "--porcelain"],
             stderr=subprocess.DEVNULL
-        )
+        ).decode().strip()
         
         remote_url = subprocess.check_output(
             ["git", "remote", "get-url", "origin"]
@@ -149,12 +127,44 @@ def get_python_metadata():
     }
 
 
-def get_conda_metadata():
-    raise NotImplementedError
+def get_conda_metadata(env_file=""):
+    """ Get whether conda is running and if so, packages in environment.yml """
+    # conda list --json lists all packages in the environment - use for export instead
+    if os.environ.get("CONDA_DEFAULT_ENV"):
+        conda_present, channels, dependencies = True, [], []
+        
+        if not env_file:
+            # Attempt to locate environment.yml in current working directory
+            path = os.path.join(os.get_cwd(), "environment.yml")
+            env_file = path if os.path.isfile(path) else ""
+
+        if env_file: # Parse environment.yml
+            with open(env_file, "r") as file:
+                data = yaml.safe_load(file)
+            channels = sorted(data["channels"])
+            raw_dependencies = data["dependencies"]
+            for dependency in raw_dependencies:
+                if isinstance(dict, dependency) and "pip" in dependency: 
+                    dependencies.extend(item["pip"]) # pip install section
+                else:
+                    dependencies.append(item)
+            dependencies = sorted(dependencies)
+            
+        return {
+            "conda_present": conda_present,
+            "conda_channels": channels,
+            "conda_dependencies": dependencies
+        }
+            
+    return None
 
 
 def get_misc_metadata():
-    raise NotImplementedError
+    """ Get locale and encoding """
+    return {
+        "locale": locale.getdefaultlocale(), 
+        "encoding": sys.getfilesystemencoding()
+    }
 
 
 def get_jupyter_metadata():
