@@ -51,8 +51,6 @@ from datetime import datetime
         #"os": platform.system(),
         #"os_release": platform.release(),
         #"os_version": platform.version(),
-        #"machine": platform.machine(),
-        #"architecture": platform.architecture()[0],
     #}
 
 
@@ -134,7 +132,11 @@ def get_git_metadata():
 
 
 def get_hardware_metadata():
-    raise NotImplementedError
+    """ Get machine, architecture, number of cores, and processor name """
+    return {"machine": platform.machine(),
+            "architecture": platform.architecture()[0],
+            "num_cores": os.cpu_count(),
+            "processor": platform.processor()}
 
 
 def get_os_metadata():
