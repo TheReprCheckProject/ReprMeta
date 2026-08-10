@@ -1,9 +1,9 @@
 # ReprMeta
 
 ![Python](https://img.shields.io/badge/language-python-green)
+![DOI](https://img.shields.io/badge/DOI-10.5281/zenodo.21873501-blue)
 ![License: CC-BY-NC-4.0](https://img.shields.io/badge/license-CC--BY--NC--4.0-lightgrey)
-<!-- ![GitHub release (latest SemVer)](https://img.shields.io/github/v/release/TheReprCheckProject/ReprMeta -->
-<!-- ![DOI](https://img.shields.io/badge/DOI-10.5281%2Fzenodo.XXXXXX-blue) -->
+![GitHub release (latest SemVer)](https://img.shields.io/github/v/release/TheReprCheckProject/ReprMeta)
 <!-- ![Bioconda](https://img.shields.io/conda/vn/bioconda/reprmeta) -->
 
 A python package for embedding reproducibility metadata into notebooks, pipelines, and scientific workflows.
@@ -49,7 +49,22 @@ reprmeta.export_metadata(
 - Virtual environment / Docker metadata
 - Bioconda / conda‑forge packaging
 
+
 ## Citation
+
+### APA 7
+Baumann, C. I.-L. (2026). ReprMeta [Python]. Zenodo. https://doi.org/10.5281/zenodo.21873501
+
+### BibTeX
+@misc{baumann2026reprmeta,
+  author       = {Baumann, Ciel Ivy-Lee},
+  title        = {ReprMeta},
+  year         = {2026},
+  publisher    = {Zenodo},
+  howpublished = {\url{https://doi.org/10.5281/zenodo.21873501}},
+  note         = {Python package},
+  doi          = {10.5281/zenodo.21873501}
+}
 
 
 ## License
