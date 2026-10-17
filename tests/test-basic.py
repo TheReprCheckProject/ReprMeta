@@ -1,4 +1,4 @@
 import reprmeta
 
-def test_metadata_runs():
-    assert isinstance(reprmeta.metadata(), dict)
+def test_get_metadata_runs():
+    assert isinstance(reprmeta.get_metadata(), dict)

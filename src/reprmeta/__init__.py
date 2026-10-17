@@ -9,12 +9,12 @@ except PackageNotFoundError:
     __version__ = None
 
 # Public API
-from .core import get_metadata, metadata, print_metadata, export_metadata
+from .core import get_metadata, print_metadata, export_metadata, render_metadata
 
 __all__ = [
     "get_metadata",
-    "metadata",
     "print_metadata",
     "export_metadata",
+    "render_metadata",
     "__version__",
 ]
