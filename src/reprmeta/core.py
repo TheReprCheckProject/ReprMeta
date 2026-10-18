@@ -1,212 +1,59 @@
-""" ReprMeta
+""" ReprMeta core.py
 
 A python package for embedding reproducibility metadata into notebooks, 
 pipelines, and scientific workflows
 
 Usage:
 
-- Jupyter example
--- reprmeta.metadata() is an alias for reprmeta.get_metadata() which
--- returns a dict of metadata
-import reprmeta
-reprmeta.metadata()
-
-- General metadata print example
-import reprmeta
-reprmeta.print_metadata()
-
-- Metadata export example
-import reprmeta
-reprmeta.export_metadata("path/to/destination.json")
-
-- Specific metadata retrieval examples
-import reprmeta
-reprmeta.get_python_version()
-reprmeta.get_platform_metadata()
-reprmeta.get_git_metadata()
+TODO
 
 """
 
-import sys
-import locale
-import os
-import platform
+
 import json
-import subprocess
-from datetime import datetime
-from importlib.metadata import version, PackageNotFoundError
-
-import yaml
-
-
-
-### Future functions to implement -----------------------------------------
-
-def get_venv_metadata():
-    # In active venv environment bool
-    raise NotImplementedError
-
-
-def get_docker_metadata():
-    # Running in docker container bool
-    raise NotImplementedError
-
-
-def get_virtual_env_metadata():
-    # Cloud instance detection bool
-    raise NotImplementedError
-
-
-
-
-### Get metadata functions ------------------------------------------------
-
-def get_reprmeta_version():
-    """ Get current package version if installed """
-    try:
-        return version("reprmeta")
-    except PackageNotFoundError:
-        return None
-
-
-def get_timestamp():
-    return datetime.now().isoformat()
-
-
-def get_git_metadata():
-    """ If inside git repo, get git commit hash, branch, and repo status """
-    try:
-        commit = subprocess.check_output(
-            ["git", "rev-parse", "HEAD"], 
-            stderr=subprocess.DEVNULL
-        ).decode().strip()
-
-        branch = subprocess.check_output(
-            ["git", "rev-parse", "--abbrev-ref", "HEAD"],
-            stderr=subprocess.DEVNULL
-        ).decode().strip()
-        
-        status = subprocess.check_output(
-            ["git", "status", "--porcelain"],
-            stderr=subprocess.DEVNULL
-        ).decode().strip()
-        
-        remote_url = subprocess.check_output(
-            ["git", "remote", "get-url", "origin"]
-        ).decode().strip()
-
-        return {"Latest Commit": commit, "Git Branch": branch, 
-                "Dirty Repo": bool(status), "Git Remote URL": remote_url}
-
-    except Exception:
-        return None
-
-
-def get_hardware_metadata():
-    """ Get machine, architecture, number of cores, and processor name """
-    return {"Machine": platform.machine(),
-            "Architecture": platform.architecture()[0],
-            "Number of Logical Cores": os.cpu_count(),
-            "Processor": platform.processor()}
-
-
-def get_os_metadata():
-    """ Get operating system, release, and OS version """
-    return {
-        "OS": platform.system(),
-        "OS Release": platform.release(),
-        "OS Version": platform.version(),
-    }    
-
-
-def get_python_metadata():
-    """ Get Python version and implementation """
-    return {
-        "Python Version": sys.version,
-        "Python Implementation": platform.python_implementation()
-    }
-
-
-def get_conda_metadata(env_file):
-    """ Get whether conda is present and if so, packages in environment.yml """
-    if os.environ.get("CONDA_DEFAULT_ENV"):
-        conda_present, channels, dependencies = True, [], []
-        
-        if not env_file:
-            # Attempt to locate environment.yml in current working directory
-            path = os.path.join(os.getcwd(), "environment.yml")
-            env_file = path if os.path.isfile(path) else ""
-
-        if env_file: # Parse environment.yml
-            with open(env_file, "r") as file:
-                data = yaml.safe_load(file)
-            channels = sorted(data["channels"])
-            raw_dependencies = data["dependencies"]
-            for dependency in raw_dependencies:
-                if isinstance(dict, dependency) and "pip" in dependency: 
-                    dependencies.extend(item["pip"]) # pip install section
-                else:
-                    dependencies.append(item)
-            dependencies = sorted(dependencies)
-            
-        return {
-            "Conda Present": conda_present,
-            "Conda Channels": channels,
-            "Conda Dependencies": dependencies
-        }
-
-    return None
-
-
-def get_hpc_metadata():
-    """ Get HPC job scheduler """
-    hpc_env_vars = {
-        "Slurm": "SLURM_JOB_ID",
-        "PBS": "PBS_JOBID",
-        "LSF": "LSB_JOBID",
-        "SGE": "JOB_ID",
-        "HTCondor": "CONDOR_JOBID",
-        "AWS Batch": "AWS_BATCH_JOB_ID",
-        "Google Cloud Batch": "GOOGLE_CLOUD_BATCH_JOB",
-        "Azure Batch": "AZ_BATCH_JOB_ID",
-    }
-
-    for scheduler, env_var in hpc_env_vars.items():
-        if os.environ.get(env_var):
-            return scheduler
-    return None
-
-
-def get_misc_metadata():
-    """ Get locale and encoding """
-    return {
-        "Locale": locale.getlocale()[0], 
-        "Encoding": locale.getlocale()[1]
-    }
-
-
+import util
+import metadata
 
 
 ### Core functions --------------------------------------------------------
 
-def get_metadata(env_file="") -> dict:
-    """ Create dict containing comprehensive reproducibility metadata """
+def get_metadata(**kwargs) -> dict:
+    """ Return dict containing reproducibility metadata 
+    
+    If a JSON path is not specified, automatically grab reproducibility metadata
+    from environment. Otherwise, return metadata specified in JSON file as dict,
+    without injecting any current environment information.
+    
+    
+    Supported keyword arguments (all optional):
+    
+    json: path to json file to retrieve metadata from (if not supplied,
+    gets current environment metadata instead)
+    
+    environment_yml: custom path to environment.yml-style file
+    environment_yaml: alias to environment_yml
+    
+    
+    """
+    if kwargs.get("json", None): return(load_json(kwargs["json"]))
+    env_files = get_env_files(kwargs)
+    present_languages = get_present_languages()
+    
     return {
-        "ReprMeta Version": get_reprmeta_version(),
-        "Timestamp": get_timestamp(),
-        "Git Metadata": get_git_metadata(),
-        "Hardware Metadata": get_hardware_metadata(),
-        "OS Metadata": get_os_metadata(),
-        "Python Metadata": get_python_metadata(),
-        "Conda Metadata": get_conda_metadata(env_file),
-        "HPC Metadata": get_hpc_metadata(),
-        "Misc Metadata": get_misc_metadata()
+        "Versioning": {
+            "ReprMeta Version": metadata.get_reprmeta_version(),
+            "Timestamp": metadata.get_timestamp(),
+            "Git Metadata": metadata.get_git_metadata()
+        },
+        "Machine Metadata": {
+            "HPC Metadata": metadata.get_hpc_metadata(),
+            "OS Metadata": metadata.get_os_metadata(),
+            "Hardware Metadata": metadata.get_hardware_metadata(),
+            "Regional Metadata": metadata.get_regional_metadata()
+        },
+        "Language Metadata": metadata.get_language_metadata(present_languages),
+        "Environment Management": metadata.get_environment_metadata(env_files)
     }
-
-
-def metadata() -> dict:
-    """ Alias for get_metadata() """
-    return get_metadata()
 
 
 def print_metadata() -> None:
