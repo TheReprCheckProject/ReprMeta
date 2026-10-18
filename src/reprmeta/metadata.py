@@ -4,13 +4,14 @@ Dedicated automated metadata retrieval functions.
 
 """
 
-import sys
+from datetime import datetime
+from importlib.metadata import version, PackageNotFoundError
 import locale
 import os
 import platform
 import subprocess
-from datetime import datetime
-from importlib.metadata import version, PackageNotFoundError
+import sys
+
 import yaml
 
 
@@ -62,12 +63,23 @@ def get_git_metadata():
 
 ### Machine metadata ------------------------------------------------------
 
-def get_hardware_metadata():
-    """ Get machine, architecture, number of cores, and processor name """
-    return {"Machine": platform.machine(),
-            "Architecture": platform.architecture()[0],
-            "Number of Logical Cores": os.cpu_count(),
-            "Processor": platform.processor()}
+def get_hpc_metadata(exts) -> str | None:
+    """ Get HPC job scheduler based on presence of HPC-specific env variable """
+    hpc_env_vars = {
+        "Slurm": "SLURM_JOB_ID",
+        "PBS": "PBS_JOBID",
+        "LSF": "LSB_JOBID",
+        "SGE": "SGE_ROOT",
+        "HTCondor": "CONDOR_JOBID",
+        "AWS Batch": "AWS_BATCH_JOB_ID",
+        "Google Cloud Batch": "GOOGLE_CLOUD_BATCH_JOB",
+        "Azure Batch": "AZ_BATCH_JOB_ID",
+    }
+
+    for scheduler, env_var in hpc_env_vars.items():
+        if os.environ.get(env_var):
+            return scheduler
+    return None
 
 
 def get_os_metadata():
@@ -79,24 +91,14 @@ def get_os_metadata():
     }    
 
 
-def get_hpc_metadata():
-    """ Get HPC job scheduler """
-    hpc_env_vars = {
-        "Slurm": "SLURM_JOB_ID",
-        "PBS": "PBS_JOBID",
-        "LSF": "LSB_JOBID",
-        "SGE": "JOB_ID",
-        "HTCondor": "CONDOR_JOBID",
-        "AWS Batch": "AWS_BATCH_JOB_ID",
-        "Google Cloud Batch": "GOOGLE_CLOUD_BATCH_JOB",
-        "Azure Batch": "AZ_BATCH_JOB_ID",
+def get_hardware_metadata():
+    """ Get machine, architecture, number of cores, and processor name """
+    return {
+        "Machine": platform.machine(),
+        "Architecture": platform.architecture()[0],
+        "Number of Logical Cores": os.cpu_count(),
+        "Processor": platform.processor()
     }
-
-    for scheduler, env_var in hpc_env_vars.items():
-        if os.environ.get(env_var):
-            return scheduler
-    raise NotImplementedError
-   # return None
 
 
 def get_regional_metadata():

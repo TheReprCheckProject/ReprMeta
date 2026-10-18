@@ -36,8 +36,9 @@ def get_metadata(**kwargs) -> dict:
     
     """
     if kwargs.get("json", None): return(load_json(kwargs["json"]))
-    env_files = get_env_files(kwargs)
-    present_languages = get_present_languages()
+    env_files = util.get_env_files(kwargs)
+    project_exts = util.get_project_exts()
+    present_languages = util.get_present_languages(project_exts)
     
     return {
         "Versioning": {
