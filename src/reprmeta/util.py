@@ -5,6 +5,8 @@ functions or specific metadata-retrieval functions.
 
 """
 
+from pathlib import Path
+
 
 def load_json(json_path) -> dict:
     """ Load ReprMeta-generated JSON from path into dict """
@@ -12,8 +14,33 @@ def load_json(json_path) -> dict:
 
 
 def get_env_files(custom_file_paths) -> dict:
-    """ Detect and return paths to environment files """
-    raise NotImplementedError
+    """ Detect and return paths to environment files 
+    
+    Parse through root directory and specified custom file paths to detect
+    and validate existence of environment management files, then report paths
+    to existing environment file paths.
+    
+    """
+    # Define standard/default locations for environment files
+    paths = {
+        "environment_yml": [Path("environment.yml"), Path("environment.yaml")],
+        "renv_lock": [Path("renv.lock")],
+        "dockerfile": [Path("Dockerfile")],
+        "docker_compose_yml": [Path("docker_compose.yml")],
+    }
+    
+    # Update default paths with custom specified environment file paths
+    paths.update(custom_file_paths)
+    
+    # Replace non-existent paths with None
+    existing_paths = dict()
+    for key, val in paths.items():
+        for path in val:
+            if path.exists():
+                existing_paths[key] = path
+                break
+            
+    return existing_paths
 
 
 def get_project_exts() -> set:
