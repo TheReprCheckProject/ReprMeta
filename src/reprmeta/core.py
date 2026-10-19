@@ -3,6 +3,10 @@
 A python package for embedding reproducibility metadata into notebooks, 
 pipelines, and scientific workflows
 
+ReprMeta should always be run using the project root as the working directory.
+Custom environment file paths must be expressed relative to the working 
+directory.
+
 Usage:
 
 TODO
@@ -27,12 +31,10 @@ def get_metadata(**kwargs) -> dict:
     
     Supported keyword arguments (all optional):
     
-    json: path to json file to retrieve metadata from (if not supplied,
-    gets current environment metadata instead)
-    
-    environment_yml: custom path to environment.yml-style file
-    environment_yaml: alias to environment_yml
-    
+    json: path to json file to retrieve metadata from. If not supplied,
+    gets current environment metadata instead
+
+    environment_yml: custom relative path to environment.yml-style file    
     
     """
     if kwargs.get("json", None): return(load_json(kwargs["json"]))

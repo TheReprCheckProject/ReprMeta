@@ -8,6 +8,8 @@ functions or specific metadata-retrieval functions.
 from pathlib import Path
 
 
+
+
 def load_json(json_path) -> dict:
     """ Load ReprMeta-generated JSON from path into dict """
     raise NotImplementedError
@@ -21,6 +23,9 @@ def get_env_files(custom_file_paths) -> dict:
     to existing environment file paths.
     
     """
+    # Parse path strings into Paths
+    custom_parsed = {key: Path(val) for key, val in custom_file_paths.items()}
+       
     # Define standard/default locations for environment files
     paths = {
         "environment_yml": [Path("environment.yml"), Path("environment.yaml")],
@@ -30,7 +35,7 @@ def get_env_files(custom_file_paths) -> dict:
     }
     
     # Update default paths with custom specified environment file paths
-    paths.update(custom_file_paths)
+    paths.update(custom_parsed)
     
     # Replace non-existent paths with None
     existing_paths = dict()
@@ -39,7 +44,7 @@ def get_env_files(custom_file_paths) -> dict:
             if path.exists():
                 existing_paths[key] = path
                 break
-            
+
     return existing_paths
 
 
