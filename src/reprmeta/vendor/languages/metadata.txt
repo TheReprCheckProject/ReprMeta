@@ -1,0 +1,4 @@
+Permalink: https://github.com/github-linguist/linguist/blob/73ee9a3b277f398c37ca4ab0dea0193849de6460/lib/linguist/languages.yml
+Downloaded: 19/10/2026 2.13pm NZT
+License: MIT
+Purpose: language-file extension mapping for project language detection

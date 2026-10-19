@@ -54,9 +54,19 @@ def get_project_exts() -> set:
 
 
 def get_present_languages(exts) -> list:
-    """ Get (non-comprehensive) set of languages detected in project """
+    """ Get (non-comprehensive) set of languages detected in project 
+    
+    Note: does not presently detect bash or other scripts without language-
+    specific file extensions
+    
+    """
     lang_exts = {
-        ".py": "Python", ".R": "R"
+        ".py": "Python", ".R": "R", 
+        ".c": "C", ".cpp": "C++"
     }
     langs_found = [lang for ext, lang in lang_exts.items() if ext in exts]
+    
+    # Do a recursive search for files with the first line containing 
+    #!/bin/bash or #!/usr/bin/env bash to detect bash usage - FUTURE TODO
+    
     return langs_found
