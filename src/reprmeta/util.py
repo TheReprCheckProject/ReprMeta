@@ -56,17 +56,18 @@ def get_project_exts() -> set:
 def get_present_languages(exts) -> list:
     """ Get (non-comprehensive) set of languages detected in project 
     
-    Note: does not presently detect bash or other scripts without language-
-    specific file extensions
+    Note: does not detect scripts without language-specific file extensions
     
     """
-    lang_exts = {
-        ".py": "Python", ".R": "R", 
-        ".c": "C", ".cpp": "C++"
-    }
-    langs_found = [lang for ext, lang in lang_exts.items() if ext in exts]
-    
-    # Do a recursive search for files with the first line containing 
-    #!/bin/bash or #!/usr/bin/env bash to detect bash usage - FUTURE TODO
-    
+    # Load file extension - language mapping
+    with open(Path("vendor/languages/languages.yml", "r")) as file:
+        lang_data = yaml.safe_load(file)
+        
+    # Map extensions to languages
+    mapping = dict()
+    for lang in lang_data:
+        for ext in lang_data[lang][extensions]:
+            mapping[ext] = mapping.get(ext, set()).add(lang)
+
+    langs_found = {langs for ext, langs in mapping.items() if ext in exts}
     return langs_found
