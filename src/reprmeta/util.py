@@ -50,7 +50,7 @@ def get_env_files(custom_file_paths) -> dict:
 
 def get_project_exts() -> set:
     """ Return set of all file extensions found in project """
-    raise NotImplementedError
+    return {f.suffix for f in Path('.').rglob('*') if f.is_file()}
 
 
 def get_present_languages(exts) -> list:
