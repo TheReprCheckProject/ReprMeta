@@ -154,7 +154,7 @@ def get_conda_metadata(env_file):
             channels = sorted(data["channels"])
             raw_dependencies = data["dependencies"]
             for dependency in raw_dependencies:
-                if isinstance(dict, dependency) and "pip" in dependency: 
+                if isinstance(dependency, dict) and "pip" in dependency: 
                     dependencies.extend(item["pip"]) # pip install section
                 else:
                     dependencies.append(item)
