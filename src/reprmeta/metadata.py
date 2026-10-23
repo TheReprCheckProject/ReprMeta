@@ -116,24 +116,33 @@ def get_regional_metadata():
 def get_language_metadata(languages: set) -> dict:
     """ Get language version/s and other language-specific metadata """
     # Get python version and implementation metadata. Other language metadata
-    # will be added to the same dictionary as the python metadata.
+    # will be added to this dictionary.
     all_lang_metadata = get_python_metadata()
     
-    # Define general language metadata commands. At minimum, should include a 
-    # version. Compiled languages are handled elsewhere.
+    # Define language metadata commands
     lang_commands = {
         "r": {"version": ["Rscript", "-e", "as.character(getRversion())"]},
         "julia": {"version": ["julia", "e", "print(VERSION)"]},
         "perl": {"version": ["perl", "-e", "print substr($^V,1)"]},
         "bash": {"version": ["bash", "--version"]},
         "ruby": {"version": ["ruby", "-e", "print RUBY_VERSION"]},
-        
         "java": {"version": ["java", "-version"]},
         "go": {"version": ["go", "version"]},
         "rust": {"version": ["rustc", "--version"]},
-        "gcc": {"compiler_version": ["gcc", "-dumpversion"]},
-        "clang": {"version": ["clang", "--version"]},
         
+        # Compiled languages. Do not include standard as this cannot reliably
+        # be queried. The current standard does not necessarily equal the
+        # standard used for building. Standard should be manually annotated.
+        "c": {
+            "clang_version": ["clang", "--version"],
+            "gcc_version": ["gcc", "-dumpversion"]
+        },
+        "c++": {
+            "clang_version": ["clang++", "--version"],
+            "gcc_version": ["g++", "-dumpfullversion"]
+        },
+
+        # Workflow languages
         "nextflow": {"version": ["nextflow", "-version"]},
         "snakemake": {
             "version": [
@@ -153,7 +162,8 @@ def get_language_metadata(languages: set) -> dict:
             command = command_dict[cmd_type]
             
             # Execute the language-specific command and store result. If the
-            # command fails, note that this metadata command is unsupported 
+            # command fails and is not related to a compiled language, note 
+            # this metadata command is unsupported 
             # by this version of ReprMeta instead of raising an error.
             try:
                 lang_dict[cmd_type] = subprocess.run(
@@ -161,8 +171,11 @@ def get_language_metadata(languages: set) -> dict:
                     capture_output=True, text=True, check=True
                 ).stdout.strip()
             except:
-                lang_dict[cmd_type] = "unsupported by ReprMeta " \
-                    f"{get_reprmeta_version()}"
+                if lang != "c" and lang != "c++":
+                    lang_dict[cmd_type] = "unsupported by ReprMeta " \
+                        f"{get_reprmeta_version()}"
+                else:
+                    lang_dict[cmd_type] = None
         
         # Add language-specific metadata to the main languages dict. If the
         # language is unsupported by this version, add unsupported note instead.
@@ -184,14 +197,6 @@ def get_python_metadata():
         }
     }
 
-
-def get_r_metadata():
-    """ Get R version """
-    version = subprocess.run(
-        ["Rscript", "-e", "as.character(getRversion())"],
-        capture_output=True, text=True, check=True
-    ).stdout.strip()
-    return {"r": {"version": version}}
 
 
 
