@@ -115,37 +115,14 @@ def get_regional_metadata():
 
 def get_language_metadata(languages: set) -> dict:
     """ Get language version/s and other language-specific metadata """
-    
-    # Get python version and implementation metadata. Other language metadata
-    # will be added to the same dictionary as the python metadata.
-    all_lang_metadata = get_python_metadata()
-    
-    # Define language metadata commands. At minimum, should include a version.
-    lang_commands = {
-        "r": {
-            "version": "...", 
-            "implementation": "..."
-        },
-        "rust": {
-            "version": "...",
-            "implementation": "..."
-        }
+    return {
+        "python": get_python_metadata(),
+        "r": get_r_metadata(),
     }
-    
-    # Execute language metadata commands and store results in dictionary
-    for lang in languages:
-        command_dict = lang_commands[lang]
-        lang_dict = dict()
-        for cmd_type in command_dict:
-            lang_dict[cmd_type] = system(command_dict[cmd_type])
-        all_lang_metadata[lang] = lang_dict
-        
-    return all_lang_metadata
 
 
 def get_python_metadata():
-    """ DEPRECATED IN FAVOUR OF GET_LANGUAGE_METADATA
-    Get Python version and implementation """
+    """ Get Python version and implementation """
     return { 
         "python": {
             "version": sys.version,
@@ -153,6 +130,14 @@ def get_python_metadata():
         }
     }
 
+
+def get_r_metadata():
+    """ Get R version """
+    version = subprocess.run(
+        ["Rscript", "-e", "as.character(getRversion())"],
+        capture_output=True, text=True, check=True
+    ).stdout.strip()
+    return {"r": {"version": version}}
 
 
 
