@@ -198,17 +198,28 @@ def get_lang_commands():
 
 
 
+
 ### Environment Metadata --------------------------------------------------
 
 def get_environment_metadata(env_files: dict) -> dict:
     """ Get metadata about environment management and managed packages """
-    get_conda_metadata(env_files[environment_yml])
+    return {
+        "conda": get_conda_metadata(env_files["environment_yml"]), # TODO
+        "renv": get_renv_metadata(env_files["renv_lock"]), # TODO
+        "docker": get_docker_metadata(
+            env_files["dockerfile"], env_files["docker_compose_yml"]
+        ) # TODO
+    }
+
+
+def get_conda_metadata(environment_yml):
+    """ Get packages in environment.yml """
+    conda_dict = {"environment_yml": True} # replace with relative path
     
-    raise NotImplementedError
-
-
-def get_conda_metadata(env_file):
-    """ Get whether conda is present and if so, packages in environment.yml """
+    # TODO : rewrite below code
+    if not os.environ.get("CONDA_DEFAULT_ENV"):
+        return 
+    
     if os.environ.get("CONDA_DEFAULT_ENV"):
         conda_present, channels, dependencies = True, [], []
         
