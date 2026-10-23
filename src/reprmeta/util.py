@@ -53,7 +53,7 @@ def get_project_exts() -> set:
     return {f.suffix for f in Path('.').rglob('*') if f.is_file()}
 
 
-def get_present_languages(exts) -> list:
+def get_present_languages(exts) -> set:
     """ Get (non-comprehensive) set of languages detected in project 
     
     Note: does not detect scripts without language-specific file extensions
@@ -67,7 +67,7 @@ def get_present_languages(exts) -> list:
     mapping = dict()
     for lang in lang_data:
         for ext in lang_data[lang][extensions]:
-            mapping[ext] = mapping.get(ext, set()).add(lang)
+            mapping[ext] = mapping.get(ext, set()).add(lang.lower())
 
     langs_found = {langs for ext, langs in mapping.items() if ext in exts}
     return langs_found

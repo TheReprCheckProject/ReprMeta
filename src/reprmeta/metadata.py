@@ -113,17 +113,44 @@ def get_regional_metadata():
 
 ### Language Metadata -----------------------------------------------------
 
-def get_language_metadata(languages) -> dict:
-    """ For each language, get version and implementation data """
-    raise NotImplementedError
+def get_language_metadata(languages: set) -> dict:
+    """ Get language version/s and other language-specific metadata """
+    
+    # Get python version and implementation metadata. Other language metadata
+    # will be added to the same dictionary as the python metadata.
+    all_lang_metadata = get_python_metadata()
+    
+    # Define language metadata commands. At minimum, should include a version.
+    lang_commands = {
+        "r": {
+            "version": "...", 
+            "implementation": "..."
+        },
+        "rust": {
+            "version": "...",
+            "implementation": "..."
+        }
+    }
+    
+    # Execute language metadata commands and store results in dictionary
+    for lang in languages:
+        command_dict = lang_commands[lang]
+        lang_dict = dict()
+        for cmd_type in command_dict:
+            lang_dict[cmd_type] = system(command_dict[cmd_type])
+        all_lang_metadata[lang] = lang_dict
+        
+    return all_lang_metadata
 
 
 def get_python_metadata():
     """ DEPRECATED IN FAVOUR OF GET_LANGUAGE_METADATA
     Get Python version and implementation """
-    return {
-        "Python Version": sys.version,
-        "Python Implementation": platform.python_implementation()
+    return { 
+        "python": {
+            "version": sys.version,
+            "implementation": platform.python_implementation()
+        }
     }
 
 
@@ -131,7 +158,7 @@ def get_python_metadata():
 
 ### Environment Metadata --------------------------------------------------
 
-def get_environment_metadata(env_files) -> dict:
+def get_environment_metadata(env_files: dict) -> dict:
     """ Get metadata about environment management and managed packages """
     get_conda_metadata(env_files[environment_yml])
     
