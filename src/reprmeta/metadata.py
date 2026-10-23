@@ -115,12 +115,57 @@ def get_regional_metadata():
 
 def get_language_metadata(languages: set) -> dict:
     """ Get language version/s and other language-specific metadata """
+    unsupported_msg = f"unsupported by ReprMeta {get_reprmeta_version()}"
+    
     # Get python version and implementation metadata. Other language metadata
     # will be added to this dictionary.
     all_lang_metadata = get_python_metadata()
+        
+    # Execute language metadata commands and store results in dictionary
+    lang_commands = get_lang_commands()    
+    for lang in languages:
+        command_dict = lang_commands.get(lang, dict())
+        
+        # Execute each language-specific command. No commands are executed for
+        # languages without at least one predefined language metadata command.
+        lang_dict = dict()
+        for cmd_type in command_dict:
+            command = command_dict[cmd_type]
+            
+            # If the command fails and is not related to a compiled language, 
+            # use unsupported_msg instead of raising an error.
+            try:
+                lang_dict[cmd_type] = subprocess.run(
+                    command, capture_output=True, text=True, check=True
+                ).stdout.strip()
+            except:
+                if lang != "c" and lang != "c++":
+                    lang_dict[cmd_type] = unsupported_msg
+                else:
+                    lang_dict[cmd_type] = None
+        
+        # Add supported language-specific metadata to the main languages dict.
+        if lang_dict:
+            all_lang_metadata[lang] = lang_dict
+        else:
+            all_lang_metadata[lang] = unsupported_msg
     
-    # Define language metadata commands
-    lang_commands = {
+    return all_lang_metadata
+
+
+def get_python_metadata():
+    """ Get Python version and implementation """
+    return { 
+        "python": {
+            "version": sys.version,
+            "implementation": platform.python_implementation()
+        }
+    }
+
+
+def get_lang_commands():
+    """ Define and return language metadata commands """
+    return {
         "r": {"version": ["Rscript", "-e", "as.character(getRversion())"]},
         "julia": {"version": ["julia", "e", "print(VERSION)"]},
         "perl": {"version": ["perl", "-e", "print substr($^V,1)"]},
@@ -150,53 +195,6 @@ def get_language_metadata(languages: set) -> dict:
             ]
         }
     }
-    
-    # Execute language metadata commands and store results in dictionary
-    for lang in languages:
-        command_dict = lang_commands.get(lang, dict())
-        
-        # Execute each language-specific command. No commands are executed for
-        # languages without at least one predefined language metadata command.
-        lang_dict = dict()
-        for cmd_type in command_dict:
-            command = command_dict[cmd_type]
-            
-            # Execute the language-specific command and store result. If the
-            # command fails and is not related to a compiled language, note 
-            # this metadata command is unsupported 
-            # by this version of ReprMeta instead of raising an error.
-            try:
-                lang_dict[cmd_type] = subprocess.run(
-                    command,
-                    capture_output=True, text=True, check=True
-                ).stdout.strip()
-            except:
-                if lang != "c" and lang != "c++":
-                    lang_dict[cmd_type] = "unsupported by ReprMeta " \
-                        f"{get_reprmeta_version()}"
-                else:
-                    lang_dict[cmd_type] = None
-        
-        # Add language-specific metadata to the main languages dict. If the
-        # language is unsupported by this version, add unsupported note instead.
-        if lang_dict:
-            all_lang_metadata[lang] = lang_dict
-        else:
-            all_lang_metadata[lang] = "unsupported by ReprMeta " \
-                f"{get_reprmeta_version()}"
-    
-    return all_lang_metadata
-
-
-def get_python_metadata():
-    """ Get Python version and implementation """
-    return { 
-        "python": {
-            "version": sys.version,
-            "implementation": platform.python_implementation()
-        }
-    }
-
 
 
 
