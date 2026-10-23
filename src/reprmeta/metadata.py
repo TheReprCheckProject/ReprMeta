@@ -115,10 +115,64 @@ def get_regional_metadata():
 
 def get_language_metadata(languages: set) -> dict:
     """ Get language version/s and other language-specific metadata """
-    return {
-        "python": get_python_metadata(),
-        "r": get_r_metadata(),
+    # Get python version and implementation metadata. Other language metadata
+    # will be added to the same dictionary as the python metadata.
+    all_lang_metadata = get_python_metadata()
+    
+    # Define general language metadata commands. At minimum, should include a 
+    # version. Compiled languages are handled elsewhere.
+    lang_commands = {
+        "r": {"version": ["Rscript", "-e", "as.character(getRversion())"]},
+        "julia": {"version": ["julia", "e", "print(VERSION)"]},
+        "perl": {"version": ["perl", "-e", "print substr($^V,1)"]},
+        "bash": {"version": ["bash", "--version"]},
+        "ruby": {"version": ["ruby", "-e", "print RUBY_VERSION"]},
+        
+        "java": {"version": ["java", "-version"]},
+        "go": {"version": ["go", "version"]},
+        "rust": {"version": ["rustc", "--version"]},
+        "gcc": {"compiler_version": ["gcc", "-dumpversion"]},
+        "clang": {"version": ["clang", "--version"]},
+        
+        "nextflow": {"version": ["nextflow", "-version"]},
+        "snakemake": {
+            "version": [
+                "python", "-c","import snakemake; print(snakemake.__version__)"
+            ]
+        }
     }
+    
+    # Execute language metadata commands and store results in dictionary
+    for lang in languages:
+        command_dict = lang_commands.get(lang, dict())
+        
+        # Execute each language-specific command. No commands are executed for
+        # languages without at least one predefined language metadata command.
+        lang_dict = dict()
+        for cmd_type in command_dict:
+            command = command_dict[cmd_type]
+            
+            # Execute the language-specific command and store result. If the
+            # command fails, note that this metadata command is unsupported 
+            # by this version of ReprMeta instead of raising an error.
+            try:
+                lang_dict[cmd_type] = subprocess.run(
+                    command,
+                    capture_output=True, text=True, check=True
+                ).stdout.strip()
+            except:
+                lang_dict[cmd_type] = "unsupported by ReprMeta " \
+                    f"{get_reprmeta_version()}"
+        
+        # Add language-specific metadata to the main languages dict. If the
+        # language is unsupported by this version, add unsupported note instead.
+        if lang_dict:
+            all_lang_metadata[lang] = lang_dict
+        else:
+            all_lang_metadata[lang] = "unsupported by ReprMeta " \
+                f"{get_reprmeta_version()}"
+    
+    return all_lang_metadata
 
 
 def get_python_metadata():
