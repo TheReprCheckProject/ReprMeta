@@ -65,6 +65,11 @@ def get_git_metadata():
 
 ### Machine metadata ------------------------------------------------------
 
+def get_virtual_env_metadata():
+    # Cloud instance detection
+    raise NotImplementedError
+
+
 def get_hpc_metadata(exts) -> str | None:
     """ Get HPC job scheduler based on presence of HPC-specific env variable """
     hpc_env_vars = {
@@ -287,14 +292,38 @@ def get_conda_metadata(environment_yml):
 
 
 def get_renv_metadata(renv_lock):
+    """ Get R project dependencies via renv
+    
+    The reported dependencies are representative of the output of 
+    renv::dependencies, and are not a full environment dump. These represent
+    libraries loaded via library() and/or used via :: syntax.
+    
+    If renv_lock_faithful is true, then all runtime dependencies match those
+    specified in the renv_lock lockfile, and vice versa.
+    
+    """
+    # renv_installed: bool
+    # renv_lock: relative path
+    # renv_lock_faithful: bool - true if all runtime deps match lockfile
+    # dependencies: list
     raise NotImplementedError
 
 
-def get_venv_metadata():
-    # In active venv environment bool
+def get_requirements_metadata(requirements_txt): # python
     raise NotImplementedError
 
 
-def get_virtual_env_metadata():
-    # Cloud instance detection bool
+def get_pyproject_metadata(pyproject_toml): # python
+    raise NotImplementedError
+
+
+def get_poetry_metadata(poetry_lock): # python
+    raise NotImplementedError
+
+
+def get_uv_metadata(uv_lock): # python
+    raise NotImplementedError
+
+
+def get_pdm_metadata(pdm_lock): # python
     raise NotImplementedError
