@@ -7,6 +7,16 @@ ReprMeta should always be run using the project root as the working directory.
 Custom environment file paths must be expressed relative to the working 
 directory.
 
+ReprMeta derives reproducibility metadata from environment management files 
+and system commands. It does not check whether the current runtime exactly
+matches dependencies specified in these files - it is the responsibility of
+the person creating the environment management files to ensure they are faithful.
+ReprMeta does not parse code to determine when and where environments are loaded.
+
+ReprMeta *does* parse the language versions present in the current environment
+without depending on environment management files, as well as git metadata.
+
+
 Usage:
 
 TODO

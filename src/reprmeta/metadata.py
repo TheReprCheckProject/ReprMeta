@@ -269,7 +269,7 @@ def get_conda_metadata(environment_yml):
     """ Get channels and packages specified in environment.yml """
     if not environment_yml: return None
     conda_dict["conda_present"] = bool(os.environ.get("CONDA_DEFAULT_ENV"))
-    conda_dict = {"environment_yml": environment_yml.relative_to(Path.cwd())}    
+    conda_dict = {"environment_yml": util.rel_path(environment_yml)}    
     
     # Parse channels and dependencies in environment.yml-like file
     channels, dependencies = [], []
@@ -298,14 +298,20 @@ def get_renv_metadata(renv_lock):
     renv::dependencies, and are not a full environment dump. These represent
     libraries loaded via library() and/or used via :: syntax.
     
-    If renv_lock_faithful is true, then all runtime dependencies match those
-    specified in the renv_lock lockfile, and vice versa.
-    
     """
-    # renv_installed: bool
-    # renv_lock: relative path
-    # renv_lock_faithful: bool - true if all runtime deps match lockfile
-    # dependencies: list
+    if not renv_lock: return None
+    renv_dict = {"renv_lock": util.rel_path(renv_lock)}
+    
+    # Load the lockfile and record pinned R and pinned renv versions
+    lock = json.load(open("renv.lock"))
+    renv_dict.update({"pinned_r_version": lock["R"]["version"]})
+    pinned_renv = lock.get("Packages", {}).get("renv")
+    renv_dict.update(
+        {"pinned_renv_version": pinned_renv.get("Version") 
+         if pinned_renv else None}
+    )
+    
+    # Record pinned versions of primary dependencies
     raise NotImplementedError
 
 

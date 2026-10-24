@@ -76,14 +76,3 @@ def get_present_languages(exts) -> set:
 def rel_path(path: Path):
     """ Return relative path of path from project root (current working dir) """
     return path.relative_to(Path.cwd())
-
-
-def is_faithful(deps_1: dict, deps_2: dict, left_only=False) -> bool:
-    """ Check if dependency dictionaries match each other 
-    
-    The left_only option is used for checking that all dependencies in dep_1
-    are also in deps_2. If disabled, all dependencies in deps_2 must also be
-    in deps_1.
-    
-    """
-    raise NotImplementedError
