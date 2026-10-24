@@ -214,39 +214,28 @@ def get_environment_metadata(env_files: dict) -> dict:
 
 def get_conda_metadata(environment_yml):
     """ Get packages in environment.yml """
-    conda_dict = {"environment_yml": True} # replace with relative path
+    if not environment_yml: return None
+    conda_dict["conda_present"] = bool(os.environ.get("CONDA_DEFAULT_ENV"))
+    conda_dict = {"environment_yml": environment_yml.relative_to(Path.cwd())}    
     
-    # TODO : rewrite below code
-    if not os.environ.get("CONDA_DEFAULT_ENV"):
-        return 
+    # Parse channels and dependencies in environment.yml-like file
+    channels, dependencies = [], []
+    with open(environment_yml, "r") as file:
+        data = yaml.safe_load(file)
+    channels = sorted(data["channels"])
+    raw_deps = data["dependencies"]
     
-    if os.environ.get("CONDA_DEFAULT_ENV"):
-        conda_present, channels, dependencies = True, [], []
-        
-        if not env_file:
-            # Attempt to locate environment.yml in current working directory
-            path = os.path.join(os.getcwd(), "environment.yml")
-            env_file = path if os.path.isfile(path) else ""
+    # Record conda and pip dependencies in environment.yml-like file
+    for dep in raw_deps:
+        if isinstance(dep, dict) and "pip" in dep: # deal with pip dependencies
+            dependencies.extend(dep["pip"])
+        else:
+            dependencies.append(dep)
+    dependencies = sorted(dependencies)
 
-        if env_file: # Parse environment.yml
-            with open(env_file, "r") as file:
-                data = yaml.safe_load(file)
-            channels = sorted(data["channels"])
-            raw_dependencies = data["dependencies"]
-            for dependency in raw_dependencies:
-                if isinstance(dependency, dict) and "pip" in dependency: 
-                    dependencies.extend(item["pip"]) # pip install section
-                else:
-                    dependencies.append(item)
-            dependencies = sorted(dependencies)
-            
-        return {
-            "Conda Present": conda_present,
-            "Conda Channels": channels,
-            "Conda Dependencies": dependencies
-        }
-
-    return None
+    # Return conda metadata
+    conda_dict.update({"channels": channels, "dependencies": dependencies})
+    return conda_dict
 
 
 def get_venv_metadata():
