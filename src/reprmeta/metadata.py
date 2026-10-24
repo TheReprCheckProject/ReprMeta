@@ -1,6 +1,6 @@
 """ ReprMeta metadata.py 
 
-Dedicated automated metadata retrieval functions.
+Automated metadata retrieval functions.
 
 """
 
@@ -208,8 +208,8 @@ def get_environment_metadata(env_files: dict) -> dict:
     return {
         "docker": get_docker_metadata(
             env_files["dockerfile"], env_files["docker_compose_yml"]
-        ), # TODO
-        "conda": get_conda_metadata(env_files["environment_yml"]), # TODO
+        ),
+        "conda": get_conda_metadata(env_files["environment_yml"]),
         "renv": get_renv_metadata(env_files["renv_lock"]) # TODO        
     }
 
@@ -220,8 +220,7 @@ def get_docker_metadata(dockerfile, docker_compose_yml):
     d_dict = dict() # docker metadata dictionary
     
     # Record relative path/s to docker-related files
-    if dockerfile:
-        d_dict.update({"dockerfile": util.rel_path(dockerfile)})
+    if dockerfile: d_dict.update({"dockerfile": util.rel_path(dockerfile)})
     if docker_compose_yml:
         d_dict.update({"docker_compose_yml": util.rel_path(docker_compose_yml)})
     
@@ -236,7 +235,29 @@ def get_docker_metadata(dockerfile, docker_compose_yml):
             ).stdout.strip()}
         )
     
-    raise NotImplementedError
+    # Record images specified in Dockerfile
+    if d_dict.get(dockerfile, None):
+        dockerfile_images = []        
+        with open(dockerfile, "r") as f:
+            for line in f:
+                line = line.strip()
+                if not line.upper().startswith("FROM "): continue
+                tokens = line.split()
+                # FROM image / FROM image AS stage
+                if len(tokens) >= 2: images.append(tokens[1])
+        d_dict.update({"dockerfile_images": dockerfile_images})
+    
+    # Record images specified in docker_compose.yml
+    if d_dict.get(docker_compose_yml, None):
+        compose_images = []
+        with open(docker_compose_yml, "r") as f:
+            compose = yaml.safe_load(f)
+        for service in compose.get("services", {}).values():
+            image = service.get("image", None)
+            if image: compose_images.append(image)
+        d_dict.update({"docker_compose_images": compose_images})
+    
+    return d_dict
 
 
 def get_conda_metadata(environment_yml):
