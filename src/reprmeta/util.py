@@ -71,3 +71,8 @@ def get_present_languages(exts) -> set:
 
     langs_found = {langs for ext, langs in mapping.items() if ext in exts}
     return langs_found
+
+
+def rel_path(path: Path):
+    """ Return relative path of path from project root (current working dir) """
+    return path.relative_to(Path.cwd())

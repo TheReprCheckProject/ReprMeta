@@ -9,11 +9,13 @@ from importlib.metadata import version, PackageNotFoundError
 import locale
 import os
 import platform
+import shutil
 import subprocess
 import sys
 
 import yaml
 
+import util
 
 
 ### Version control metadata ----------------------------------------------
@@ -204,16 +206,41 @@ def get_lang_commands():
 def get_environment_metadata(env_files: dict) -> dict:
     """ Get metadata about environment management and managed packages """
     return {
-        "conda": get_conda_metadata(env_files["environment_yml"]), # TODO
-        "renv": get_renv_metadata(env_files["renv_lock"]), # TODO
         "docker": get_docker_metadata(
             env_files["dockerfile"], env_files["docker_compose_yml"]
-        ) # TODO
+        ), # TODO
+        "conda": get_conda_metadata(env_files["environment_yml"]), # TODO
+        "renv": get_renv_metadata(env_files["renv_lock"]) # TODO        
     }
 
 
+def get_docker_metadata(dockerfile, docker_compose_yml):
+    """ Get basic docker metadata from dockerfile and/or docker compose """
+    if not dockerfile and not docker_compose_yml: return None
+    d_dict = dict() # docker metadata dictionary
+    
+    # Record relative path/s to docker-related files
+    if dockerfile:
+        d_dict.update({"dockerfile": util.rel_path(dockerfile)})
+    if docker_compose_yml:
+        d_dict.update({"docker_compose_yml": util.rel_path(docker_compose_yml)})
+    
+    # Find docker executable and record version if docker executable is present
+    docker_exe = shutil.which("docker")
+    d_dict.update({"docker_present": bool(docker_exe)})
+    if docker_exe:
+        d_dict.update(
+            {"docker_version": subprocess.run(
+                [docker_exe, "--version"],
+                capture_output=True, text=True
+            ).stdout.strip()}
+        )
+    
+    raise NotImplementedError
+
+
 def get_conda_metadata(environment_yml):
-    """ Get packages in environment.yml """
+    """ Get channels and packages specified in environment.yml """
     if not environment_yml: return None
     conda_dict["conda_present"] = bool(os.environ.get("CONDA_DEFAULT_ENV"))
     conda_dict = {"environment_yml": environment_yml.relative_to(Path.cwd())}    
@@ -238,13 +265,12 @@ def get_conda_metadata(environment_yml):
     return conda_dict
 
 
-def get_venv_metadata():
-    # In active venv environment bool
+def get_renv_metadata(renv_lock):
     raise NotImplementedError
 
 
-def get_docker_metadata():
-    # Running in docker container bool
+def get_venv_metadata():
+    # In active venv environment bool
     raise NotImplementedError
 
 
