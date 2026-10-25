@@ -305,14 +305,31 @@ def get_renv_metadata(renv_lock):
     # Load the lockfile and record pinned R and pinned renv versions
     lock = json.load(open("renv.lock"))
     renv_dict.update({"pinned_r_version": lock["R"]["version"]})
-    pinned_renv = lock.get("Packages", {}).get("renv")
+    pinned_packages = lock.get("Packages", {})
+    pinned_renv = pinned_packages.get("renv")
     renv_dict.update(
         {"pinned_renv_version": pinned_renv.get("Version") 
          if pinned_renv else None}
     )
     
-    # Record pinned versions of primary dependencies
-    raise NotImplementedError
+    # Get ordered list of invoked R packages via renv. It is likely safe to 
+    # assume renv is present or able to bootstrap itself, given renv.lock must
+    # exist to be at this point in this function.
+    try:
+        invoked = subprocess.run(
+            ["Rscript", "-e", 'cat(sort(unique(renv::dependencies()$Package)))'],
+            capture_output=True, text=True, check=True
+        ).stdout.strip().split()
+    except CalledProcessError:
+        renv_dict.update({"invoked_packages": "failed to get invoked packages"})
+        return renv_dict
+    
+    # Record pinned versions of invoked packages
+    renv_dict.update(
+        {"invoked_packages": {pkg: pinned_packages.get(pkg) for pkg in invoked}}
+    )
+    
+    return renv_dict
 
 
 def get_requirements_metadata(requirements_txt): # python
